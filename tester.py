@@ -110,7 +110,6 @@ class InteractiveEventManagementTester:
         else:
             print("❌ Invalid choice")
     
-    # 1. Authentication Endpoints
     def test_1_1_get_token(self):
         """1.1 Get JWT Token"""
         print("\n🔐 1.1 - Get JWT Token")
@@ -148,18 +147,17 @@ class InteractiveEventManagementTester:
             self.tokens[self.current_user]["access"] = response.json()["access"]
             print("✅ Token refreshed successfully!")
     
-    # 2. Events Endpoints
     def test_2_1_list_events(self):
         """2.1 List All Events"""
         print("\n📋 2.1 - List All Events")
         
-        # Get query parameters
+
         print("\nOptional query parameters:")
         search = input("Search term (press Enter to skip): ").strip()
         is_public = input("Is public (true/false, press Enter to skip): ").strip()
         ordering = input("Order by (-created_at, start_time, etc.): ").strip() or "-created_at"
         
-        # Build URL with query parameters
+
         url = f"{self.base_url}/api/events/"
         params = []
         if search:
@@ -180,7 +178,7 @@ class InteractiveEventManagementTester:
         print("\n🆕 2.2 - Create New Event")
         self.ensure_authentication()
         
-        # Default event data
+
         default_start = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%dT10:00:00Z")
         default_end = (datetime.now() + timedelta(days=30, hours=4)).strftime("%Y-%m-%dT14:00:00Z")
         
@@ -241,7 +239,7 @@ class InteractiveEventManagementTester:
             print("❌ Event ID is required")
             return
         
-        # First get current event data
+
         response = requests.get(f"{self.base_url}/api/events/{event_id}/")
         if response.status_code != 200:
             print("❌ Cannot fetch event details")
@@ -356,7 +354,6 @@ class InteractiveEventManagementTester:
         )
         self.print_response(response, f"GET /api/events/{event_id}/reviews/")
     
-    # 3. RSVP Endpoints
     def test_3_1_get_users_rsvps(self):
         """3.1 Get User's RSVPs"""
         print("\n📋 3.1 - Get User's RSVPs")
@@ -412,7 +409,7 @@ class InteractiveEventManagementTester:
         print("\n✏️ 3.3 - Update RSVP")
         self.ensure_authentication()
         
-        # First get user's RSVPs to show available options
+
         response = requests.get(
             f"{self.base_url}/api/rsvps/",
             headers=self.get_auth_headers()
@@ -449,7 +446,6 @@ class InteractiveEventManagementTester:
         )
         self.print_response(response, f"PUT /api/rsvps/{rsvp_id}/")
     
-    # 4. Reviews Endpoints
     def test_4_1_get_users_reviews(self):
         """4.1 Get User's Reviews"""
         print("\n📋 4.1 - Get User's Reviews")
@@ -583,7 +579,7 @@ class InteractiveEventManagementTester:
     
     def run(self):
         """Main application loop"""
-        # Auto-authenticate on start
+
         self.authenticate_users()
         
         while True:
@@ -630,8 +626,6 @@ class InteractiveEventManagementTester:
         else:
             print("❌ Invalid choice. Please try again.")
             input("Press Enter to continue...")
-
-# Run the interactive tester
 if __name__ == "__main__":
     try:
         tester = InteractiveEventManagementTester()
