@@ -28,11 +28,9 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Event.objects.all()
         
-        # For non-authenticated users, only show public events
         if not self.request.user.is_authenticated:
             return queryset.filter(is_public=True)
         
-        # For authenticated users, show public events and private events they have access to
         if self.action == 'list':
             return queryset.filter(
                 models.Q(is_public=True) | 
@@ -48,9 +46,8 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def rsvp(self, request, pk=None):
         event = self.get_object()
-        rsvp_status = request.data.get('status', 'Going')  # Renamed variable
+        rsvp_status = request.data.get('status', 'Going')
         
-        # Check if RSVP already exists
         rsvp, created = RSVP.objects.get_or_create(
             event=event,
             user=request.user,
@@ -62,7 +59,7 @@ class EventViewSet(viewsets.ModelViewSet):
             rsvp.save()
         
         serializer = RSVPSerializer(rsvp)
-        return Response(serializer.data, status=status.HTTP_200_OK)  # Now using the imported status module
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def reviews(self, request, pk=None):
@@ -88,14 +85,12 @@ class RSVPViewSet(viewsets.ModelViewSet):
         event_id = request.data.get('event')
         rsvp_status = request.data.get('status', 'Going')
         
-        # Validate required fields
         if not event_id:
             return Response(
                 {'error': 'Event ID is required'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Validate status
         valid_statuses = ['Going', 'Maybe', 'Not Going']
         if rsvp_status not in valid_statuses:
             return Response(
@@ -111,18 +106,17 @@ class RSVPViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Check if RSVP already exists
         try:
-            # Try to get existing RSVP
+
             rsvp = RSVP.objects.get(event=event, user=request.user)
-            # Update existing RSVP
+
             rsvp.status = rsvp_status
             rsvp.save()
             serializer = self.get_serializer(rsvp)
             return Response(serializer.data, status=status.HTTP_200_OK)
             
         except RSVP.DoesNotExist:
-            # Create new RSVP
+
             rsvp = RSVP.objects.create(
                 event=event,
                 user=request.user,
@@ -135,7 +129,6 @@ class RSVPViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         rsvp_status = request.data.get('status')
         
-        # Validate status
         valid_statuses = ['Going', 'Maybe', 'Not Going']
         if rsvp_status not in valid_statuses:
             return Response(
